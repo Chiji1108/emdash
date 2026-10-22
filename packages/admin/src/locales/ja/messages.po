@@ -11605,7 +11605,7 @@ msgstr "もう一度コピー"
 
 #: packages/admin/src/components/MediaUploadDialog.tsx:326
 msgid "Retry failed"
-msgstr "再試行に失敗しました"
+msgstr "失敗したアップロードを再試行"
 
 #: packages/admin/src/components/BulkTagDialog.tsx:523
 msgid "Retry failures"
