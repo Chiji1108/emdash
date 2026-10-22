@@ -704,6 +704,18 @@ Notes on `"client"` mode:
 
 In every mode, the toolbar can be dismissed in the browser via its × button (per-browser, until the next time an editor opens the admin). Preview and edit-mode responses always render server-side with `Cache-Control: private, no-store`.
 
+### `sitemap`
+
+**Optional.** Adds sitemaps to the index at `/sitemap.xml`, after the collection sitemaps. Use it for pages that are not collection entries. Each entry is a path on the site, starting with `/`, or an absolute `http` or `https` URL. Other values fail the build.
+
+```js
+emdash({
+	sitemap: { sitemaps: ["/sitemap-pages.xml"] },
+})
+```
+
+The index lists these sitemaps without a `<lastmod>`. A path that a collection's sitemap uses, such as `/sitemap-pages.xml` on a site with a `pages` collection, would be served by your route instead of the collection's. Search engines accept a sitemap on another host only after you verify that host with them. See [Pages outside collections](/guides/seo/#pages-outside-collections).
+
 ## Database adapters
 
 Import the adapters from `emdash/db`:

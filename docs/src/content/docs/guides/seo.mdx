@@ -134,6 +134,38 @@ Each child sitemap holds up to 2,000 entries, ordered by entry ID so editing an 
 
 Add the sitemap URL to Google Search Console or Bing Webmaster Tools to see its indexing status there.
 
+### Pages outside collections
+
+Pages that are not collection entries, such as Astro routes in `src/pages/`, are not in the collection sitemaps. Serve a sitemap for them from your own route and list it with the [`sitemap`](/reference/configuration/#sitemap) option, so the index links it after the collection sitemaps:
+
+```js title="astro.config.mjs"
+emdash({
+	sitemap: { sitemaps: ["/sitemap-pages.xml"] },
+})
+```
+
+```ts title="src/pages/sitemap-pages.xml.ts"
+import type { APIRoute } from "astro";
+import { getSiteSettings } from "emdash";
+
+const PATHS = ["/", "/about", "/access"];
+
+export const GET: APIRoute = async ({ url }) => {
+	const { url: siteUrl } = await getSiteSettings();
+	const origin = siteUrl || url.origin;
+	const urls = PATHS.map((path) => `  <url><loc>${new URL(path, origin).href}</loc></url>`);
+	const body = [
+		'<?xml version="1.0" encoding="UTF-8"?>',
+		'<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">',
+		...urls,
+		"</urlset>",
+	].join("\n");
+	return new Response(body, { headers: { "Content-Type": "application/xml; charset=utf-8" } });
+};
+```
+
+Build the URLs from the same origin as the index, as the example does with the **Site URL** setting: search engines ignore sitemap URLs on another host. A route in `src/pages/` takes precedence over EmDash's `sitemap-[collection].xml` route for the same path. Avoid a name that a collection's sitemap uses, such as `sitemap-pages.xml` when the site has a `pages` collection with listed entries.
+
 ## `robots.txt`
 
 EmDash serves `/robots.txt`. By default it allows all crawlers, disallows `/_emdash/`, and references the sitemap:

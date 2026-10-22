@@ -709,6 +709,26 @@ export interface EmDashConfig {
 	toolbar?: "server" | "client" | false;
 
 	/**
+	 * Sitemap options.
+	 *
+	 * The built-in `/sitemap.xml` lists one sitemap per collection. Pages
+	 * that are not CMS entries, such as hand-written Astro routes, need a
+	 * sitemap of their own; list it in `sitemaps` and the index includes it
+	 * after the collection sitemaps.
+	 *
+	 * @example
+	 * ```ts
+	 * emdash({
+	 *   sitemap: { sitemaps: ["/sitemap-pages.xml"] },
+	 * })
+	 * ```
+	 */
+	sitemap?: {
+		/** Paths on this site (starting with `/`) or absolute http(s) URLs of extra sitemaps. */
+		sitemaps?: string[];
+	};
+
+	/**
 	 * Version of Astro the host project is building with. Populated by the
 	 * integration's `astro:config:setup` hook (not authored by the user) and
 	 * surfaced to the admin and the registry install gate so a plugin's

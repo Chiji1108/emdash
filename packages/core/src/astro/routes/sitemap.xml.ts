@@ -6,7 +6,8 @@
  * Each collection with published, indexable content gets a child sitemap
  * at /sitemap-{collection}.xml, continued at /sitemap-{collection}-{n}.xml
  * once it exceeds one page. The index includes a <lastmod> per child
- * derived from the most recently updated entry on that page.
+ * derived from the most recently updated entry on that page. Sitemaps
+ * listed in the `sitemap.sitemaps` option follow, without a <lastmod>.
  */
 
 import type { APIRoute } from "astro";
@@ -63,6 +64,13 @@ export const GET: APIRoute = async ({ locals, url }) => {
 			lines.push("  <sitemap>");
 			lines.push(`    <loc>${escapeXml(loc)}</loc>`);
 			lines.push(`    <lastmod>${escapeXml(sitemap.lastmod)}</lastmod>`);
+			lines.push("  </sitemap>");
+		}
+
+		for (const extra of emdash.config?.sitemap?.sitemaps ?? []) {
+			const loc = extra.startsWith("/") ? `${siteUrl}${extra}` : extra;
+			lines.push("  <sitemap>");
+			lines.push(`    <loc>${escapeXml(loc)}</loc>`);
 			lines.push("  </sitemap>");
 		}
 

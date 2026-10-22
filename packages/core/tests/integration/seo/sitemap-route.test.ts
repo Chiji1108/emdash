@@ -13,6 +13,7 @@ import { sql, type Kysely } from "kysely";
 import { afterEach, beforeEach, describe, expect, it } from "vitest";
 
 import { SITEMAP_PAGE_SIZE } from "../../../src/api/handlers/seo.js";
+import type { EmDashConfig } from "../../../src/astro/integration/runtime.js";
 import { GET as getSitemap } from "../../../src/astro/routes/sitemap-[collection].xml.js";
 import { GET as getSitemapIndex } from "../../../src/astro/routes/sitemap.xml.js";
 import { createDatabase } from "../../../src/database/connection.js";
@@ -27,6 +28,7 @@ interface MockContextOpts {
 	collectionSlug: string | undefined;
 	db: Kysely<Database> | null;
 	url?: string;
+	config?: EmDashConfig;
 }
 
 function mockContext(opts: MockContextOpts): Parameters<typeof getSitemap>[0] {
@@ -34,7 +36,7 @@ function mockContext(opts: MockContextOpts): Parameters<typeof getSitemap>[0] {
 	return {
 		params: { collection: opts.collectionSlug },
 		locals: {
-			emdash: opts.db ? { db: opts.db, config: undefined } : undefined,
+			emdash: opts.db ? { db: opts.db, config: opts.config } : undefined,
 		},
 		url,
 	} as unknown as APIContext;
@@ -165,6 +167,51 @@ describe("sitemap-[collection].xml route", () => {
 
 		expect(xml).toContain("<loc>http://localhost:4321/blog/hello</loc>");
 		expect(xml).toContain("<loc>http://localhost:4321/blog/world</loc>");
+	});
+
+	it("lists the sitemaps from the sitemap.sitemaps option in the index", async () => {
+		await repo.create({
+			type: "post",
+			slug: "hello",
+			data: { title: "Hello" },
+			status: "published",
+		});
+
+		const res = await getSitemapIndex(
+			mockContext({
+				collectionSlug: undefined,
+				db,
+				config: {
+					sitemap: {
+						sitemaps: ["/sitemap-pages.xml", "https://shop.example.com/sitemap.xml?a=1&b=2"],
+					},
+				},
+			}),
+		);
+		expect(res.status).toBe(200);
+		const xml = await res.text();
+
+		const locs = Array.from(xml.matchAll(/<loc>(.*?)<\/loc>/g), (match) => match[1]);
+		expect(locs).toEqual([
+			"http://localhost:4321/sitemap-post.xml",
+			"http://localhost:4321/sitemap-pages.xml",
+			"https://shop.example.com/sitemap.xml?a=1&amp;b=2",
+		]);
+	});
+
+	it("lists the configured sitemaps when no collection has listed entries", async () => {
+		const res = await getSitemapIndex(
+			mockContext({
+				collectionSlug: undefined,
+				db,
+				config: { sitemap: { sitemaps: ["/sitemap-pages.xml"] } },
+			}),
+		);
+		expect(res.status).toBe(200);
+		const xml = await res.text();
+		expect(Array.from(xml.matchAll(/<loc>(.*?)<\/loc>/g), (match) => match[1])).toEqual([
+			"http://localhost:4321/sitemap-pages.xml",
+		]);
 	});
 
 	it("emits an <image:image> entry for rows with an SEO image", async () => {

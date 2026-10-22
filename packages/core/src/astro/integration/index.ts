@@ -214,6 +214,33 @@ export function buildImageRemotePatterns(
 }
 
 /**
+ * Normalize the `sitemap.sitemaps` option: site paths keep only their
+ * percent-encoded path and query, URLs must be http(s).
+ *
+ * @internal Exported for unit testing.
+ */
+export function resolveExtraSitemaps(entries: unknown): string[] {
+	if (!Array.isArray(entries)) {
+		throw new Error("sitemap.sitemaps must be an array of paths or http(s) URLs.");
+	}
+	return entries.map(resolveExtraSitemap);
+}
+
+function resolveExtraSitemap(entry: unknown): string {
+	if (typeof entry === "string" && entry.startsWith("/") && !entry.startsWith("//")) {
+		const parsed = new URL(entry, "http://localhost");
+		return `${parsed.pathname}${parsed.search}`;
+	}
+	if (typeof entry === "string" && URL.canParse(entry)) {
+		const parsed = new URL(entry);
+		if (parsed.protocol === "http:" || parsed.protocol === "https:") return parsed.href;
+	}
+	throw new Error(
+		`Invalid sitemap.sitemaps entry: ${JSON.stringify(entry)}. Use a path starting with "/" or an http(s) URL.`,
+	);
+}
+
+/**
  * Build the config subset baked into `virtual:emdash/config` and exposed
  * at runtime as `locals.emdash.config`. A config option that runtime code
  * reads (routes, middleware) MUST be listed here — an option only on
@@ -235,6 +262,7 @@ export function buildSerializableConfig(resolvedConfig: EmDashConfig): Record<st
 		maxUploadSize: resolvedConfig.maxUploadSize,
 		admin: resolvedConfig.admin,
 		toolbar: resolvedConfig.toolbar,
+		sitemap: resolvedConfig.sitemap,
 		updateCheck: resolvedConfig.updateCheck,
 		objectCacheEnabled: resolvedConfig.objectCache !== undefined,
 	};
@@ -598,6 +626,9 @@ export function emdash(config: EmDashConfig = {}): AstroIntegration {
 			...resolvedConfig.admin,
 			hiddenNavItems: resolveHiddenNavItems(config.admin.hiddenNavItems),
 		};
+	}
+	if (config.sitemap?.sitemaps !== undefined) {
+		resolvedConfig.sitemap = { sitemaps: resolveExtraSitemaps(config.sitemap.sitemaps) };
 	}
 
 	// Resolved plugins (populated at build time by importing entrypoints)
