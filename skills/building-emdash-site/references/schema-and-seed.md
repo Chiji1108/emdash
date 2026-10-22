@@ -524,7 +524,7 @@ Set `"status": "draft"` to create unpublished content:
 
 The seed at `.emdash/seed.json`, `package.json#emdash.seed`, or `seed/seed.json` is inlined into the build. On the first request before the setup wizard is completed, the runtime applies the seed's schema and structure once: collections, fields, taxonomy definitions, menus, redirects, widget areas, sections and settings. Later edits to the seed file are not re-applied to that database.
 
-Sample content, bylines and taxonomy terms are applied only when you:
+Sample content, bylines and taxonomy terms are applied only when you do one of the following. A taxonomy with `"termsAreStructure": true` is the exception: its terms are part of the schema and are applied on the first request too.
 
 - choose sample content in the setup wizard,
 - open `/_emdash/api/setup/dev-bypass` (add `?content=0` to skip content), or

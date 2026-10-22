@@ -185,6 +185,13 @@ export interface SeedTaxonomy {
 	locale?: string;
 	translationOf?: string;
 	terms?: SeedTaxonomyTerm[];
+	/**
+	 * Apply `terms` with the schema instead of as sample data, so they exist
+	 * even when `includeContent` is false. Use it for a fixed vocabulary the
+	 * site's templates depend on. Like `hierarchical`, a translation entry
+	 * takes it from the entry it translates.
+	 */
+	termsAreStructure?: boolean;
 }
 
 /**
@@ -366,8 +373,8 @@ export interface SeedApplyOptions {
 	/**
 	 * Include sample data: content entries, bylines, and taxonomy terms
 	 * (default: false). Schema and structure (collections, fields, taxonomy
-	 * definitions, menus, settings, redirects, widget areas, sections) are
-	 * always applied.
+	 * definitions and terms marked `termsAreStructure`, menus, settings,
+	 * redirects, widget areas, sections) are always applied.
 	 */
 	includeContent?: boolean;
 

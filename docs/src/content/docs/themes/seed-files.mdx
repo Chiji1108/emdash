@@ -314,7 +314,7 @@ limits are updated when the seed is applied with `onConflict: "update"`.
 
 ## Taxonomies
 
-Taxonomy definitions identify their target collections. Terms are sample data and are applied only when `includeContent` is true.
+Taxonomy definitions identify their target collections. Terms are sample data and are applied only when `includeContent` is true, unless the taxonomy sets `termsAreStructure: true`. Set it when the terms are a fixed vocabulary that the site's templates depend on: the terms are then applied with the schema, including on the first request before setup and when the setup wizard skips sample content. Like `hierarchical`, the flag belongs to the taxonomy, so a translation entry takes it from the entry it translates. `emdash export-seed` does not write the flag.
 
 ```json title="seed/seed.json"
 {
@@ -624,7 +624,7 @@ export async function applyProjectSeed(
 
 | Option | Default | Current behavior |
 | --- | --- | --- |
-| `includeContent` | `false` | Includes content entries, bylines, and taxonomy terms |
+| `includeContent` | `false` | Includes content entries, bylines, and taxonomy terms. Terms of a taxonomy with `termsAreStructure: true` are applied either way |
 | `onConflict` | `"skip"` | `"skip"`, `"update"`, or `"error"` for supported entity conflicts |
 | `storage` | none | Storage adapter required to download `$media` URLs |
 | `skipMediaDownload` | `false` | Keeps `$media` URLs as external media values |

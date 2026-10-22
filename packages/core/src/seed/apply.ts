@@ -687,7 +687,11 @@ async function applySeedWrites(
 			}
 
 			// Create terms (if provided)
-			if (includeContent && taxonomy.terms && taxonomy.terms.length > 0) {
+			if (
+				appliesSeedTerms(taxonomy, taxonomiesBySeedId, includeContent) &&
+				taxonomy.terms &&
+				taxonomy.terms.length > 0
+			) {
 				const termRepo = new TaxonomyRepository(db);
 				const existingTerms = await findExistingSeedTerms(db, taxonomy.name, taxonomy.terms);
 
@@ -1407,12 +1411,33 @@ async function applySeedWrites(
 	return { result, complete, progress };
 }
 
+/**
+ * Terms are sample content unless the taxonomy marks them as structure. The
+ * flag belongs to the taxonomy, so a translation entry takes its source's.
+ */
+function appliesSeedTerms(
+	taxonomy: SeedTaxonomy,
+	taxonomiesBySeedId: ReadonlyMap<string, SeedTaxonomy>,
+	includeContent: boolean,
+): boolean {
+	if (includeContent) return true;
+	const source = findTaxonomyStructureSource(taxonomy, taxonomiesBySeedId) ?? taxonomy;
+	return source.termsAreStructure === true;
+}
+
 function countSeedItems(seed: SeedFile, includeContent: boolean): number {
-	if (!includeContent) return 0;
-	const terms = (seed.taxonomies ?? []).reduce(
-		(total, taxonomy) => total + (taxonomy.terms?.length ?? 0),
+	const taxonomies = seed.taxonomies ?? [];
+	const taxonomiesBySeedId = new Map(
+		taxonomies.flatMap((taxonomy) => (taxonomy.id ? [[taxonomy.id, taxonomy] as const] : [])),
+	);
+	const terms = taxonomies.reduce(
+		(total, taxonomy) =>
+			appliesSeedTerms(taxonomy, taxonomiesBySeedId, includeContent)
+				? total + (taxonomy.terms?.length ?? 0)
+				: total,
 		0,
 	);
+	if (!includeContent) return terms;
 	const entries = Object.values(seed.content ?? {}).reduce(
 		(total, collectionEntries) => total + collectionEntries.length,
 		0,

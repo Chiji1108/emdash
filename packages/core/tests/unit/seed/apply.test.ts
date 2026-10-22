@@ -782,6 +782,50 @@ describe("applySeed", () => {
 			expect(term).toBeFalsy();
 		});
 
+		it("should create terms marked termsAreStructure without includeContent", async () => {
+			const seed: SeedFile = {
+				version: "1",
+				taxonomies: [
+					{
+						name: "department",
+						label: "Departments",
+						hierarchical: true,
+						collections: ["posts"],
+						termsAreStructure: true,
+						terms: [
+							{ slug: "internal", label: "Internal medicine" },
+							{ slug: "diabetes", label: "Diabetes", parent: "internal" },
+						],
+					},
+					{
+						name: "tags",
+						label: "Tags",
+						hierarchical: false,
+						collections: ["posts"],
+						termsAreStructure: true,
+						terms: [{ slug: "notice", label: "Notice" }],
+					},
+					{
+						name: "topics",
+						label: "Topics",
+						hierarchical: false,
+						collections: ["posts"],
+						terms: [{ slug: "sample", label: "Sample" }],
+					},
+				],
+			};
+
+			const result = await applySeed(db, seed);
+
+			expect(result.taxonomies.terms).toBe(3);
+			const termRepo = new TaxonomyRepository(db);
+			const internal = await termRepo.findBySlug("department", "internal");
+			const diabetes = await termRepo.findBySlug("department", "diabetes");
+			expect(diabetes?.parentId).toBe(internal?.id);
+			expect(await termRepo.findBySlug("tags", "notice")).toBeTruthy();
+			expect(await termRepo.findBySlug("topics", "sample")).toBeFalsy();
+		});
+
 		it("should create flat taxonomy terms when includeContent is true", async () => {
 			const seed: SeedFile = {
 				version: "1",
@@ -2373,6 +2417,52 @@ describe("applySeed", () => {
 			expect(terms).toHaveLength(2);
 			expect(terms[0]?.slug).toBe("tech");
 			expect(terms[1]?.slug).toBe("tecnologia");
+			expect(terms[0]?.translation_group).toBe(terms[1]?.translation_group);
+		});
+
+		it("applies a translation's terms when its source marks them as structure", async () => {
+			const seed: SeedFile = {
+				version: "1",
+				taxonomies: [
+					{
+						id: "tax:topics:en",
+						name: "topics",
+						label: "Topics",
+						hierarchical: false,
+						collections: ["posts"],
+						locale: "en",
+						termsAreStructure: true,
+						terms: [{ id: "term:topics:tech:en", slug: "tech", label: "Tech", locale: "en" }],
+					},
+					{
+						id: "tax:topics:es",
+						name: "topics",
+						label: "Temas",
+						locale: "es",
+						translationOf: "tax:topics:en",
+						terms: [
+							{
+								id: "term:topics:tech:es",
+								slug: "tecnologia",
+								label: "Tecnología",
+								locale: "es",
+								translationOf: "term:topics:tech:en",
+							},
+						],
+					},
+				],
+			};
+
+			await applySeed(db, seed);
+
+			const terms = await db
+				.selectFrom("taxonomies")
+				.selectAll()
+				.where("name", "=", "topics")
+				.orderBy("locale", "asc")
+				.execute();
+
+			expect(terms.map((term) => term.slug)).toEqual(["tech", "tecnologia"]);
 			expect(terms[0]?.translation_group).toBe(terms[1]?.translation_group);
 		});
 

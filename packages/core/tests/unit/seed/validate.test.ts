@@ -578,6 +578,50 @@ describe("validateSeed", () => {
 			expect(result.errors).toContain("taxonomies[0]: name is required");
 		});
 
+		it("should reject a non-boolean termsAreStructure", () => {
+			const result = validateSeed({
+				version: "1",
+				taxonomies: [
+					{
+						name: "category",
+						label: "Categories",
+						hierarchical: true,
+						collections: [],
+						termsAreStructure: "yes",
+					},
+				],
+			});
+			expect(result.valid).toBe(false);
+			expect(result.errors).toContain("taxonomies[0].termsAreStructure: must be a boolean");
+		});
+
+		it("should warn when a translation declares its own termsAreStructure", () => {
+			const result = validateSeed({
+				version: "1",
+				taxonomies: [
+					{
+						id: "tax:en",
+						name: "category",
+						label: "Categories",
+						hierarchical: false,
+						collections: [],
+						termsAreStructure: true,
+					},
+					{
+						name: "category",
+						label: "Catégories",
+						locale: "fr",
+						translationOf: "tax:en",
+						termsAreStructure: false,
+					},
+				],
+			});
+			expect(result.valid).toBe(true);
+			expect(result.warnings).toContain(
+				"taxonomies[1].termsAreStructure: comes from taxonomies[0], so the value declared here is ignored",
+			);
+		});
+
 		it("should require taxonomy label", () => {
 			const result = validateSeed({
 				version: "1",

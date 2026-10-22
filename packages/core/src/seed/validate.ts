@@ -511,6 +511,22 @@ export function validateSeed(data: unknown): ValidationResult {
 
 				const hierarchical = (structureSource ?? taxonomy).hierarchical;
 
+				if (
+					taxonomy.termsAreStructure !== undefined &&
+					typeof taxonomy.termsAreStructure !== "boolean"
+				) {
+					errors.push(`${prefix}.termsAreStructure: must be a boolean`);
+				} else if (
+					structureSource &&
+					structureSource !== taxonomy &&
+					taxonomy.termsAreStructure !== undefined &&
+					taxonomy.termsAreStructure !== (structureSource.termsAreStructure ?? false)
+				) {
+					warnings.push(
+						`${prefix}.termsAreStructure: comes from taxonomies[${seed.taxonomies.indexOf(structureSource)}], so the value declared here is ignored`,
+					);
+				}
+
 				// Validate terms if present
 				if (taxonomy.terms) {
 					if (!Array.isArray(taxonomy.terms)) {
