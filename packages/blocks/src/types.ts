@@ -217,8 +217,11 @@ export type FormField = (
 export interface TableColumn {
 	key: string;
 	label: string;
-	/** `element`: each row holds a button, link, or menu element under this column's key. */
-	format?: "text" | "badge" | "relative_time" | "number" | "code" | "element";
+	/**
+	 * `element`: each row holds a button, link, or menu element under this column's key.
+	 * `percent_change`: each row holds a ratio (`0.25` = 25% higher), shown as a colored, signed percentage.
+	 */
+	format?: "text" | "badge" | "relative_time" | "number" | "percent_change" | "code" | "element";
 	sortable?: boolean;
 }
 

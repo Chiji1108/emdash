@@ -263,6 +263,7 @@ export const templates: Template[] = [
 					{ key: "title", label: "Title", sortable: true },
 					{ key: "status", label: "Status", format: "badge" },
 					{ key: "views", label: "Views", format: "number", sortable: true },
+					{ key: "change", label: "Change", format: "percent_change" },
 					{ key: "updated", label: "Last Updated", format: "relative_time", sortable: true },
 				],
 				rows: [
@@ -270,24 +271,28 @@ export const templates: Template[] = [
 						title: "Getting Started with EmDash",
 						status: "published",
 						views: 4521,
+						change: 0.124,
 						updated: new Date(Date.now() - 2 * 60 * 60 * 1000).toISOString(),
 					},
 					{
 						title: "Advanced Content Modeling",
 						status: "published",
 						views: 2103,
+						change: -0.083,
 						updated: new Date(Date.now() - 24 * 60 * 60 * 1000).toISOString(),
 					},
 					{
 						title: "Plugin Development Guide",
 						status: "draft",
 						views: 891,
+						change: 0,
 						updated: new Date(Date.now() - 3 * 24 * 60 * 60 * 1000).toISOString(),
 					},
 					{
 						title: "Deployment to Cloudflare",
 						status: "published",
 						views: 3187,
+						change: "New",
 						updated: new Date(Date.now() - 7 * 24 * 60 * 60 * 1000).toISOString(),
 					},
 					{

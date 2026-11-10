@@ -217,6 +217,33 @@ return {
 
 Choosing a menu item sends a `block_action` with the menu's `action_id` and the item's `value`. Item values must be unique within a menu. Element cells accept only `button`, `link`, and `menu` elements. A menu can also appear in an `actions` block, as a section accessory, or in empty-state actions, but not as a form field. The `elements.menu(actionId, label, items, { style })` builder returns the same shape.
 
+## Changes in tables
+
+Set a table column's `format` to `percent_change` to show how much a value rose or fell, such as each page's views compared with the previous period. Each row holds the change as a ratio: `0.25` means 25% higher and `-0.1` means 10% lower.
+
+```typescript title="src/plugin.ts"
+return {
+	blocks: [
+		{
+			type: "table",
+			page_action_id: "top_pages",
+			columns: [
+				{ key: "path", label: "Page", format: "code" },
+				{ key: "views", label: "Views", format: "number" },
+				{ key: "change", label: "Change", format: "percent_change" },
+			],
+			rows: [
+				{ path: "/", views: 1200, change: 0.25 },
+				{ path: "/about", views: 300, change: -0.1 },
+				{ path: "/careers", views: 40, change: "New" },
+			],
+		},
+	],
+};
+```
+
+The admin shows the ratio as a percentage in the viewer's locale, with at most one fractional digit. An increase shows an up arrow in green, such as `+25%`, and a decrease a down arrow in red, such as `-10%`. A change that rounds to zero shows `0%` in a muted color, without an arrow. A string, such as `New` for a page with no views in the previous period, shows as plain text. `null`, a missing value, and a non-finite number such as `Infinity` leave the cell empty, so send `null` or a string when the previous value is zero.
+
 ## Saved-entry panels and actions
 
 Declare an editor panel when a plugin needs to show information beside a saved entry. Panels start collapsed and call their private route only when an editor opens them.

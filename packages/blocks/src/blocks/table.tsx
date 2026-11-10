@@ -12,6 +12,32 @@ import type {
 } from "../types.js";
 import { cn, formatRelativeTime } from "../utils.js";
 
+/** A ratio (`0.25` = 25% higher) as a signed percentage, colored like the stats block's trends. */
+function formatPercentChange(value: unknown, str: string): React.ReactNode {
+	if (typeof value !== "number") return str;
+	if (!Number.isFinite(value)) return "";
+	const label = new Intl.NumberFormat(undefined, {
+		style: "percent",
+		maximumFractionDigits: 1,
+		signDisplay: "exceptZero",
+	}).format(value);
+	// Round as the label does, so a value shown as 0% is not colored as a rise or fall.
+	const direction = Math.sign(value) * Math.round(Math.abs(value) * 1000);
+	if (direction === 0) return <span className="text-kumo-subtle">{label}</span>;
+	const Arrow = direction > 0 ? ArrowUp : ArrowDown;
+	return (
+		<span
+			className={cn(
+				"inline-flex items-center gap-1",
+				direction > 0 ? "text-green-600" : "text-red-600",
+			)}
+		>
+			<Arrow size={14} aria-hidden="true" />
+			{label}
+		</span>
+	);
+}
+
 function formatCell(value: unknown, format: TableColumn["format"]): React.ReactNode {
 	let str: string;
 	if (value == null) {
@@ -34,6 +60,8 @@ function formatCell(value: unknown, format: TableColumn["format"]): React.ReactN
 			const num = Number(value);
 			return Number.isNaN(num) ? str : num.toLocaleString();
 		}
+		case "percent_change":
+			return formatPercentChange(value, str);
 		case "code":
 			return <code className="rounded bg-kumo-tint px-1.5 py-0.5 font-mono text-sm">{str}</code>;
 		default:

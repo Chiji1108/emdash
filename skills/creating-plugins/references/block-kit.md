@@ -168,7 +168,7 @@ routes: {
 - `page_action_id` — required. The admin sends it as the `block_action` id when the user sorts a column or pages through results.
 - `empty_text` — shown in place of the table when `rows` is empty
 - `next_cursor` — set it to render a "Load more" control
-- `format` — per column: `text` (default), `badge`, `relative_time`, `number`, `code`, or `element`
+- `format` — per column: `text` (default), `badge`, `relative_time`, `number`, `percent_change`, `code`, or `element`. A `percent_change` cell holds a ratio (`0.25` = 25% higher) and shows it as a signed percentage, green with an up arrow for an increase and red with a down arrow for a decrease. A string shows as plain text; `null` leaves the cell empty.
 
 An `element` column holds a `button`, `link`, or `menu` per row, for row actions. A row without a value leaves the cell empty. Choosing a menu item sends a `block_action` with the menu's `action_id` and the item's `value`:
 
